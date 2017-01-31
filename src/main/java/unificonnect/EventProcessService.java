@@ -85,6 +85,7 @@ public class EventProcessService {
      * Lock the recording for the video with the specified ID.
      *
      * This requires making a call to MongoDB.
+     * TODO: Currently we open and then close a connection to MongoDB, this is a pretty inefficient way of operating.
      */
     public void lockRecording(String eventId) {
         logger.info("Locking recording: " + eventId);
@@ -96,15 +97,18 @@ public class EventProcessService {
 
         UpdateResult result = eventCollection.updateOne(
                 eq("_id", new ObjectId(eventId)),
-                set("locked", "true")
+                set("locked", true)
             );
 
+        /*
+         This doesn't work, since Unifi NVR software is still using Mongo 2.4 :'(
 
         if (result.getModifiedCount() == 1) {
             logger.info("Recording updated.");
         } else {
             logger.log(Level.SEVERE, "Unable to update recording");
         }
+        */
 
         mongoClient.close();
     }
@@ -153,7 +157,7 @@ public class EventProcessService {
                 JsonObject jData = new JsonParser().parse(detectatronOutput).getAsJsonObject();
                 int numberOfKeyTags = jData.getAsJsonArray("keyTags").size();
 
-                logger.log(Level.INFO, "Found " + numberOfKeyTags + "key tags");
+                logger.log(Level.INFO, "Found " + numberOfKeyTags + " key tags");
 
 
                 if (numberOfKeyTags >= 1) {
