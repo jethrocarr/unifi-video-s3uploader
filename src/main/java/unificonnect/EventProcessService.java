@@ -151,7 +151,7 @@ public class EventProcessService {
                 HttpEntity entity = response.getEntity();
                 String detectatronOutput = IOUtils.toString(entity.getContent(), "utf-8");
 
-                logger.log(Level.INFO, "Data received: "+ detectatronOutput);
+                logger.log(Level.INFO, "Data received: " + detectatronOutput);
 
                 Gson gson = new Gson();
                 JsonObject jData = new JsonParser().parse(detectatronOutput).getAsJsonObject();
@@ -163,6 +163,9 @@ public class EventProcessService {
                 if (numberOfKeyTags >= 1) {
                     lockRecording(eventId);
                 }
+
+            } else if (responseCode == 405) {
+                logger.info("Detectatron is current disarmed, ignoring video upload");
 
             } else {
                 logger.log(Level.SEVERE, "Unsuccessful response from Detectatron, HTTP response: " + responseCode);
