@@ -46,6 +46,8 @@ import java.util.logging.Logger;
 public class EventProcessService {
 
     private final String apiKey = System.getenv("UNIFI_API_KEY");
+    private final String endpointDetectatron = System.getenv("ENDPOINT_DETECTATRON");
+
     private static final Logger logger = Logger.getLogger("EventProcessService");
 
 
@@ -129,7 +131,7 @@ public class EventProcessService {
         // Download video and push it up to Detectatron
         try {
 
-            String endpointUrl = "http://detectatron.jethrocarr.com:8080/tag/video";
+            String endpointUrl = endpointDetectatron + "/event";
 
             HttpClient httpclient = new DefaultHttpClient();
             HttpPost httpPost = new HttpPost(endpointUrl);
@@ -143,26 +145,20 @@ public class EventProcessService {
             HttpResponse response = httpclient.execute(httpPost);
 
             int responseCode = response.getStatusLine().getStatusCode();
-            if (responseCode == 200) {
-                logger.info("Successful delivery of video");
 
-                // Did we identify keyTags? If so, we should "lock" the recording.
+            if (responseCode == 200) {
+                logger.info("Video uploaded - no key tags returned.");
+
+            } else if (responseCode == 201) {
+                // We identified keyTags hence we should "lock" the recording.
+                logger.info("Video uploaded - key tags returned. Marking recording as \"locked\"");
 
                 HttpEntity entity = response.getEntity();
                 String detectatronOutput = IOUtils.toString(entity.getContent(), "utf-8");
 
                 logger.log(Level.INFO, "Data received: " + detectatronOutput);
 
-                Gson gson = new Gson();
-                JsonObject jData = new JsonParser().parse(detectatronOutput).getAsJsonObject();
-                int numberOfKeyTags = jData.getAsJsonArray("keyTags").size();
-
-                logger.log(Level.INFO, "Found " + numberOfKeyTags + " key tags");
-
-
-                if (numberOfKeyTags >= 1) {
-                    lockRecording(eventId);
-                }
+                lockRecording(eventId);
 
             } else if (responseCode == 405) {
                 logger.info("Detectatron is current disarmed, ignoring video upload");

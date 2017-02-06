@@ -12,6 +12,20 @@ Detectatron service for scoring and validation.
 * Network access to upstream Detectatron service
 
 
+# Usage
+
+You must provide the endpoint for Detectatron and the API key for one of the users inside the Unifi Video software (see
+the user management page to configure these).
+
+    export ENDPOINT_DETECTATRON=http://detectatron.example.com:8080
+    export UNIFI_API_KEY=abc123
+
+The process itself can be run with:
+
+    java -jar -Xmx128M JARFILE
+
+As this is a relatively simple connector, the memory allocation is low (128MB). It runs on JDK 7 and above.
+
 
 # Build & Execution
 
@@ -27,7 +41,7 @@ A standalone self-contained JAR executable can be built and run with:
     LATEST=`find build -name '*.jar' | tail -n1`
     
     export UNIFI_API_KEY=foobar
-    java -jar $LATEST
+    java -jar -Xmx128M $LATEST
 
 
 # Testing
