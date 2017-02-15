@@ -34,12 +34,12 @@ Development is done with IntelliJ, however any Gradle & Java compatible IDE shou
 Standard gradle build commands can be used to build and run the application:
 
     gradle bootRun
-    
+
 A standalone self-contained JAR executable can be built and run with:
 
     gradle bootRepackage
     LATEST=`find build -name '*.jar' | tail -n1`
-    
+
     export UNIFI_API_KEY=foobar
     java -jar -Xmx128M $LATEST
 
@@ -61,3 +61,15 @@ It is possible to bypass tests by adding -x test to your normal gradle commands,
     gradle bootRun -x test
 
 This of course is not recommended, but it can be useful if you need to separate the build task and the testing task (eg as part of a CI/CD workflow).
+
+
+# License
+
+    Detectatron is licensed under the Apache License, Version 2.0 (the "License").
+    See the LICENSE.txt or http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
