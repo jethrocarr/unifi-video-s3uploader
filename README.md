@@ -4,6 +4,9 @@ This companion Java application runs on any server running the Ubiquiti Unifi NV
 MongoDB database used by the NVR software and when a video event occurs, exports the video and posts it up to the
 Detectatron service for scoring and validation.
 
+Warning: This connector is *still in development and is terrible code that needs
+a refactor and much more unit testing*.
+
 
 # Requirements
 
@@ -63,6 +66,12 @@ It is possible to bypass tests by adding -x test to your normal gradle commands,
 
 This of course is not recommended, but it can be useful if you need to separate the build task and the testing task (eg as part of a CI/CD workflow).
 
+
+# Contributions
+
+All contributions are welcome via Pull Requests including documentation fixes,
+unit testing and better functionality. Note that new Java code should have
+associated unit tests in order to be accepted.
 
 # License
 
