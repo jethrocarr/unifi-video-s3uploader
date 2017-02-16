@@ -41,6 +41,7 @@ A standalone self-contained JAR executable can be built and run with:
     LATEST=`find build -name '*.jar' | tail -n1`
 
     export UNIFI_API_KEY=foobar
+    export ENDPOINT_DETECTATRON=http://detectatron.example.com:8080
     java -jar -Xmx128M $LATEST
 
 
