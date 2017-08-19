@@ -23,6 +23,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HttpRequestExecutor;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,8 @@ public class EventProcessService {
 
     private static final Logger logger = Logger.getLogger("EventProcessService");
 
+    @Autowired
+    S3UploadService myS3UploadService;
 
     /**
      * Download the video with the specific event ID from the Unifi API
@@ -77,47 +80,15 @@ public class EventProcessService {
 
         } catch (java.io.IOException e) {
             e.printStackTrace();
-            logger.info("An unexpected issue occurred whilst attempting to download the video from Unifi API.");
+            logger.warning("An unexpected issue occurred whilst attempting to download the video from Unifi API.");
         }
 
         return videoContents;
     }
 
-    /**
-     * Lock the recording for the video with the specified ID.
-     *
-     * This requires making a call to MongoDB.
-     * TODO: Currently we open and then close a connection to MongoDB, this is a pretty inefficient way of operating.
-     */
-    public void lockRecording(String eventId) {
-        logger.info("Locking recording: " + eventId);
-
-
-        MongoClient mongoClient = new MongoClient("localhost", 7441);
-        MongoDatabase avDatabase = mongoClient.getDatabase("av");
-        MongoCollection<Document> eventCollection = avDatabase.getCollection("event");
-
-        UpdateResult result = eventCollection.updateOne(
-                eq("_id", new ObjectId(eventId)),
-                set("locked", true)
-            );
-
-        /*
-         This doesn't work, since Unifi NVR software is still using Mongo 2.4 :'(
-
-        if (result.getModifiedCount() == 1) {
-            logger.info("Recording updated.");
-        } else {
-            logger.log(Level.SEVERE, "Unable to update recording");
-        }
-        */
-
-        mongoClient.close();
-    }
-
 
     /**
-     * Send the video for the specified event ID up to Detectatron.
+     * Download the specified recording event from UniFi Video & Upload to S3.
      *
      * @param eventId
      * @throws InterruptedException
@@ -126,50 +97,6 @@ public class EventProcessService {
     public void uploadAsync(String eventId) throws InterruptedException
     {
         logger.info("Processing event: " + eventId);
-
-
-        // Download video and push it up to Detectatron
-        try {
-
-            String endpointUrl = endpointDetectatron + "/event";
-
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(endpointUrl);
-
-            ByteArrayBody uploadFilePart = new ByteArrayBody (downloadVideo(eventId), eventId + ".mp4");
-
-            MultipartEntity reqEntity = new MultipartEntity();
-            reqEntity.addPart("file", uploadFilePart);
-            httpPost.setEntity(reqEntity);
-
-            HttpResponse response = httpclient.execute(httpPost);
-
-            int responseCode = response.getStatusLine().getStatusCode();
-
-            if (responseCode == 200) {
-                logger.info("Video uploaded - no key tags returned.");
-
-            } else if (responseCode == 201) {
-                // We identified keyTags hence we should "lock" the recording.
-                logger.info("Video uploaded - key tags returned. Marking recording as \"locked\"");
-
-                HttpEntity entity = response.getEntity();
-                String detectatronOutput = IOUtils.toString(entity.getContent(), "utf-8");
-
-                logger.log(Level.INFO, "Data received: " + detectatronOutput);
-
-                lockRecording(eventId);
-
-            } else if (responseCode == 405) {
-                logger.info("Detectatron is current disarmed, ignoring video upload");
-
-            } else {
-                logger.log(Level.SEVERE, "Unsuccessful response from Detectatron, HTTP response: " + responseCode);
-            }
-
-        } catch (java.io.IOException e) {
-            logger.info("An unexpected issue occurred trying to communicate with Detectatron");
-        }
-
+        myS3UploadService.uploader(eventId + ".mp4", downloadVideo(eventId), "");
     }
 }

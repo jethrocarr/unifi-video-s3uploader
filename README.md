@@ -1,30 +1,33 @@
-# Detectatron Unifi Connector
+# UniFi Video S3 Uploader
 
-This companion Java application runs on any server running the Ubiquiti Unifi NVR software. It regularly polls the
-MongoDB database used by the NVR software and when a video event occurs, exports the video and posts it up to the
-Detectatron service for scoring and validation.
+This companion Java application runs on any server running the Ubiquiti UniFi NVR software. It regularly polls the
+MongoDB database used by the NVR software and when a video event occurs, exports the video and uploads it directly
+into an S3 bucket.
 
-Warning: This connector is *still in development and is terrible code that needs
-a refactor and much more unit testing*.
+Warning: This connector is *still in development and is terrible code that needs a refactor and much more unit testing*.
 
 
 # Requirements
 
 * Unifi Video controller 3.6.0+
 * JDK 7 or later
-* Network access to upstream Detectatron service
+* An Amazon S3 bucket.
 
 
 # Usage
 
-You must provide the endpoint for Detectatron and the API key for one of the users inside the Unifi Video software (see
-the user management page to configure these).
+You must provide the API key for one of the users inside the Unifi Video software (see the user management page to
+configure these).
 
-    export ENDPOINT_DETECTATRON=http://detectatron.example.com:8080
     export UNIFI_API_KEY=abc123
 
-The process itself can be run with:
+And you must supply AWS IAM credentials, region and the S3 bucket to use:
 
+    export S3_BUCKET=example
+    export AWS_ACCESS_KEY_ID=ap-southeast-2
+    export AWS_ACCESS_KEY_ID=??
+    export AWS_SECRET_ACCESS_KEY=??
+    
     java -jar -Xmx128M JARFILE
 
 As this is a relatively simple connector, the memory allocation is low (128MB). It runs on JDK 7 and above.
@@ -44,7 +47,10 @@ A standalone self-contained JAR executable can be built and run with:
     LATEST=`find build -name '*.jar' | tail -n1`
 
     export UNIFI_API_KEY=foobar
-    export ENDPOINT_DETECTATRON=http://detectatron.example.com:8080
+    export AWS_ACCESS_KEY_ID=ap-southeast-2
+    export AWS_ACCESS_KEY_ID=??
+    export AWS_SECRET_ACCESS_KEY=??
+  
     java -jar -Xmx128M $LATEST
 
 
@@ -75,7 +81,7 @@ associated unit tests in order to be accepted.
 
 # License
 
-    Detectatron is licensed under the Apache License, Version 2.0 (the "License").
+    Unifi Video S3 Uploader is licensed under the Apache License, Version 2.0 (the "License").
     See the LICENSE.txt or http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software

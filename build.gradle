@@ -27,6 +27,7 @@ repositories {
 
 dependencyManagement {
     imports {
+        mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.75'
     }
 }
 
@@ -38,6 +39,7 @@ dependencies {
     compile("org.apache.httpcomponents:httpclient:4.5.2")
     compile("org.apache.httpcomponents:httpmime:4.5.2")
     compile("commons-io:commons-io:2.5")
+    compile("com.amazonaws:aws-java-sdk-s3")
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('junit:junit:4.12')
