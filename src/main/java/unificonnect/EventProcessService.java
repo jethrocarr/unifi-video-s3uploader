@@ -72,15 +72,23 @@ public class EventProcessService {
             HttpGet httpGet = new HttpGet(endpointUrl);
 
             HttpResponse response = httpclient.execute(httpGet);
-            HttpEntity entity = response.getEntity();
+            int responsecode = response.getStatusLine().getStatusCode();
 
-            InputStream videoDownload = entity.getContent();
+            if (responsecode == 200) {
+                HttpEntity entity = response.getEntity();
 
-            videoContents = IOUtils.toByteArray(videoDownload);
+                InputStream videoDownload = entity.getContent();
+
+                videoContents = IOUtils.toByteArray(videoDownload);
+            } else {
+                logger.warning("Unexpected response code from Unifi API: "+ responsecode);
+                throw new RuntimeException("Unable to download video from API");
+            }
 
         } catch (java.io.IOException e) {
             e.printStackTrace();
             logger.warning("An unexpected issue occurred whilst attempting to download the video from Unifi API.");
+            throw new RuntimeException("Unable to download video from API");
         }
 
         return videoContents;
